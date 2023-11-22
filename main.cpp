@@ -7,18 +7,32 @@
 #include "Grove_LCD_RGB_Backlight.h"
 
 #define WAIT_TIME_MS 500 
-DigitalOut led1(LED1);
+AnalogIn sensor(A1);
 Grove_LCD_RGB_Backlight rgbLCD(PB_9,PB_8);
+
+float temperaturaSalida;
+float NTC;
+float T0 = 298.15;
+float Vout;
+int beta = 4250;
+int R0 = 100000;
+char cadena[16];
 
 int main()
 {
-    printf("This is the bare metal blinky example running on Mbed OS %d.%d.%d.\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
+    Vout = sensor*3.3;
+    
+    NTC = (R0/Vout)*5-R0;
+
+    temperaturaSalida = (beta / (log(NTC/R0)+(beta/T0)))- 273.15;
 
     while (true)
     {
-        rgbLCD.setRGB(0xff, 0xff, 0xff);                 //set the color 
-        rgbLCD.print("Hello World!");
-        led1 = !led1;
+        rgbLCD.locate(0,0);
+        rgbLCD.setRGB(0xff, 0xff, 0xff);                //set the color 
+        sprintf(cadena,"Temperatura %f\n",temperaturaSalida);
+        rgbLCD.print(cadena);
+
         thread_sleep_for(WAIT_TIME_MS);
     }
 }
